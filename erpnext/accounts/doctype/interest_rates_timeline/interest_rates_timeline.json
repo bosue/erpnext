@@ -1,0 +1,117 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "beta": 1,
+ "creation": "2023-09-14 02:42:09.909439",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "section_break_usage",
+  "countries",
+  "column_break_usage",
+  "type",
+  "section_break_base",
+  "parent_interest_rates_timeline",
+  "column_break_base",
+  "spread",
+  "section_break_rates",
+  "current_rate",
+  "historic_rates"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "historic_rates",
+   "fieldtype": "Table",
+   "label": "Historic rates",
+   "options": "Interest Rates Timeline Item"
+  },
+  {
+   "fieldname": "parent_interest_rates_timeline",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Based on",
+   "options": "Interest Rates Timeline"
+  },
+  {
+   "fieldname": "countries",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country",
+   "search_index": 1
+  },
+  {
+   "fieldname": "current_rate",
+   "fieldtype": "Percent",
+   "label": "Current rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "spread",
+   "fieldtype": "Percent",
+   "label": "Spread (percent points)"
+  },
+  {
+   "fieldname": "section_break_base",
+   "fieldtype": "Section Break",
+   "label": "Base"
+  },
+  {
+   "fieldname": "column_break_base",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_rates",
+   "fieldtype": "Section Break",
+   "label": "Rates"
+  },
+  {
+   "fieldname": "section_break_usage",
+   "fieldtype": "Section Break",
+   "label": "Usage"
+  },
+  {
+   "fieldname": "column_break_usage",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Late paying interest"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-09-14 04:15:25.180029",
+ "modified_by": "Administrator",
+ "module": "Accounts",
+ "name": "Interest Rates Timeline",
+ "nsm_parent_field": "parent_interest_rates_timeline",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
