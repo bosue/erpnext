@@ -200,17 +200,17 @@ def post_process(doctype, data):
 		doc.status_display = []
 
 		if doc.get("per_billed"):
-			doc.status_percent += flt(doc.per_billed)
+			percent_billed = flt(doc.per_billed, d.precision("per_billed", doc))
+			doc.status_percent += percent_billed
 			doc.status_display.append(
-				_("Billed") if doc.per_billed == 100 else _("{0}% Billed").format(doc.per_billed)
+				_("Billed") if percent_billed == 100 else _("{0}% Billed").format(percent_billed)
 			)
 
 		if doc.get("per_delivered"):
-			doc.status_percent += flt(doc.per_delivered, 2)
+			percent_delivered = flt(doc.per_delivered, d.precision("per_delivered", doc))
+			doc.status_percent += percent_delivered
 			doc.status_display.append(
-				_("Delivered")
-				if flt(doc.per_delivered, 2) == 100
-				else _("{0}% Delivered").format(doc.per_delivered)
+				_("Delivered") if percent_delivered == 100 else _("{0}% Delivered").format(percent_delivered)
 			)
 
 		if hasattr(doc, "set_indicator"):

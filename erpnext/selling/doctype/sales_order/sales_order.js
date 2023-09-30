@@ -51,8 +51,11 @@ frappe.ui.form.on("Sales Order", {
 	},
 
 	refresh: function(frm) {
-		if(frm.doc.docstatus === 1) {
-			if (frm.doc.status !== 'Closed' && flt(frm.doc.per_delivered, 2) < 100 && flt(frm.doc.per_billed, 2) < 100) {
+		if (frm.doc.docstatus === 1) {
+			let percent_picked = flt(frm.doc.per_picked, precision('per_picked', frm.doc));
+			let percent_delivered = flt(frm.doc.per_delivered, precision('per_delivered', frm.doc));
+			let percent_billed = flt(frm.doc.per_billed, precision('per_billed', frm.doc));
+			if (frm.doc.status !== 'Closed' && percent_delivered < 100 && percent_billed < 100) {
 				frm.add_custom_button(__('Update Items'), () => {
 					erpnext.utils.update_child_items({
 						frm: frm,
@@ -64,7 +67,7 @@ frappe.ui.form.on("Sales Order", {
 				});
 
 				// Stock Reservation > Reserve button should only be visible if the SO has unreserved stock and no Pick List is created against the SO.
-				if (frm.doc.__onload && frm.doc.__onload.has_unreserved_stock && flt(frm.doc.per_picked) === 0) {
+				if (frm.doc.__onload && frm.doc.__onload.has_unreserved_stock && percent_picked === 0) {
 					frm.add_custom_button(__('Reserve'), () => frm.events.create_stock_reservation_entries(frm), __('Stock Reservation'));
 				}
 			}
@@ -456,9 +459,10 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		var me = this;
 		super.refresh();
 		let allow_delivery = false;
-
 		if (doc.docstatus==1) {
-
+			let percent_picked = flt(doc.per_picked, precision('per_picked', doc));
+			let percent_delivered = flt(doc.per_delivered, precision('per_delivered', doc));
+			let percent_billed = flt(doc.per_billed, precision('per_billed', doc));
 			if(this.frm.has_perm("submit")) {
 				if(doc.status === 'On Hold') {
 				   // un-hold
@@ -466,7 +470,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					   me.frm.cscript.update_status('Resume', 'Draft')
 				   }, __("Status"));
 
-				   if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
+				   if (percent_delivered < 100 || percent_billed < 100) {
 					   // close
 					   this.frm.add_custom_button(__('Close'), () => this.close_sales_order(), __("Status"))
 				   }
@@ -484,7 +488,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						&& !this.frm.doc.skip_delivery_note
 
 					if (this.frm.has_perm("submit")) {
-						if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
+						if (percent_delivered < 100 || percent_billed < 100) {
 							// hold
 							this.frm.add_custom_button(__('Hold'), () => this.hold_sales_order(), __("Status"))
 							// close
@@ -494,7 +498,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
 					if (!doc.__onload || !doc.__onload.has_reserved_stock) {
 						// Don't show the `Reserve` button if the Sales Order has Picked Items.
-						if (flt(doc.per_picked, 2) < 100 && flt(doc.per_delivered, 2) < 100) {
+						if (percent_picked < 100 && percent_delivered < 100) {
 							this.frm.add_custom_button(__('Pick List'), () => this.create_pick_list(), __('Create'));
 						}
 					}
@@ -505,18 +509,18 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					const order_is_a_custom_sale = ["Sales", "Shopping Cart", "Maintenance"].indexOf(doc.order_type) === -1;
 
 					// delivery note
-					if(flt(doc.per_delivered, 2) < 100 && (order_is_a_sale || order_is_a_custom_sale) && allow_delivery) {
+					if (percent_delivered < 100 && (order_is_a_sale || order_is_a_custom_sale) && allow_delivery) {
 						this.frm.add_custom_button(__('Delivery Note'), () => this.make_delivery_note_based_on_delivery_date(true), __('Create'));
 						this.frm.add_custom_button(__('Work Order'), () => this.make_work_order(), __('Create'));
 					}
 
 					// sales invoice
-					if(flt(doc.per_billed, 2) < 100) {
+					if (percent_billed < 100) {
 						this.frm.add_custom_button(__('Sales Invoice'), () => me.make_sales_invoice(), __('Create'));
 					}
 
 					// material request
-					if(!doc.order_type || (order_is_a_sale || order_is_a_custom_sale) && flt(doc.per_delivered, 2) < 100) {
+					if (!doc.order_type || (order_is_a_sale || order_is_a_custom_sale) && percent_delivered < 100) {
 						this.frm.add_custom_button(__('Material Request'), () => this.make_material_request(), __('Create'));
 						this.frm.add_custom_button(__('Request for Raw Materials'), () => this.make_raw_material_request(), __('Create'));
 					}
@@ -527,14 +531,14 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					}
 
 					// maintenance
-					if(flt(doc.per_delivered, 2) < 100 && (order_is_maintenance || order_is_a_custom_sale)) {
+					if (percent_delivered < 100 && (order_is_maintenance || order_is_a_custom_sale)) {
 						this.frm.add_custom_button(__('Maintenance Visit'), () => this.make_maintenance_visit(), __('Create'));
 						this.frm.add_custom_button(__('Maintenance Schedule'), () => this.make_maintenance_schedule(), __('Create'));
 					}
 
 					// project
-					if(flt(doc.per_delivered, 2) < 100) {
-							this.frm.add_custom_button(__('Project'), () => this.make_project(), __('Create'));
+					if (percent_delivered < 100) {
+						this.frm.add_custom_button(__('Project'), () => this.make_project(), __('Create'));
 					}
 
 					if (doc.docstatus === 1 && !doc.inter_company_order_reference) {
